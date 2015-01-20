@@ -433,7 +433,7 @@ def prioritize(build_id=None, branch=None):
             queued_build['vcs_revision'][0:7],
             queued_build['subject']
         ))
-        app.api.cancel(queued_build)
+        app.api.cancel(queued_build['build_num'])
 
     click.echo("Retrying builds that were cancelled...")
     for queued_build in queued_builds:
@@ -441,7 +441,7 @@ def prioritize(build_id=None, branch=None):
             queued_build['vcs_revision'][0:7],
             queued_build['subject']
         ))
-        app.api.retry(queued_build)
+        app.api.retry(queued_build['build_num'])
 
 
 @cicli.command()
