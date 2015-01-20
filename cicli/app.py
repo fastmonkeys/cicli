@@ -443,7 +443,7 @@ def cancel(build_id=None, src=None, branch=None):
         click.echo("Build %s was cancelled." % response['build_num'])
         return
     else:
-        click.echo("Build has already finish.")
+        click.echo("Build has already finished.")
 
 
 @cicli.command()
