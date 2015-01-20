@@ -19,6 +19,17 @@ ERROR_ANALYZERS = (
 )
 
 
+class CircleAPIError(Exception):
+    pass
+
+
+def json_request(request):
+    if request.status_code == 200:
+        return request.json()
+    else:
+        raise CircleAPIError(request.json()['message'])
+
+
 class CircleAPI(object):
     def __init__(self, api_key):
         self.api_key = api_key
@@ -31,7 +42,7 @@ class CircleAPI(object):
         offset=0,
         filter_by_status=''
     ):
-        return requests.get(
+        return json_request(requests.get(
             'https://circleci.com/api/v1/project/'
             '%s/%s?circle-token=%s&limit=%s&offset=%s&filter=%s' %
             (
@@ -45,10 +56,10 @@ class CircleAPI(object):
             headers={
                 'Accept': 'application/json'
             }
-        ).json()
+        ))
 
     def build(self, username, project, build_id):
-        return requests.get(
+        return json_request(requests.get(
             'https://circleci.com/api/v1/project/'
             '%s/%s/%s?circle-token=%s' % (
                 username,
@@ -59,7 +70,7 @@ class CircleAPI(object):
             headers={
                 'Accept': 'application/json'
             }
-        ).json()
+        ))
 
     def get_output(self, action):
         return requests.get(action['output_url']).json()[0]['message']
@@ -74,7 +85,7 @@ class CiCLI(object):
             click.echo("export CIRCLECI_API_KEY=YOUR_API_KEY_HERE")
             click.echo("")
             sys.exit(1)
-        self.api = CircleAPI(os.environ.get('CIRCLECI_API_KEY'))
+        self.api = CircleAPI('d'+os.environ.get('CIRCLECI_API_KEY'))
 
     @property
     def origin_url(self):
@@ -159,7 +170,7 @@ def build(build_id=None):
     ))
     # queued, :scheduled, :not_run, :not_running, :running or :finished
     if build['lifecycle'] == 'queued':
-        click.echo("Your build is in the queue.")
+        click.echo("%s  Your build is in the queue." % EMOJI_QUEUE)
     elif build['lifecycle'] == 'running':
         start_time = dateutil.parser.parse(build['start_time'])
         click.echo(
