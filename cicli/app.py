@@ -77,7 +77,7 @@ class CircleAPI(object):
 
 
 class CiCLI(object):
-    def __init__(self):
+    def __init__(self, src=None, branch=None):
         if not os.environ.get('CIRCLECI_API_KEY'):
             click.echo("You haven't set your CIRCLECI_API_KEY.")
             click.echo("Add API key at https://circleci.com/account/api")
@@ -86,6 +86,9 @@ class CiCLI(object):
             click.echo("")
             sys.exit(1)
         self.api = CircleAPI(os.environ.get('CIRCLECI_API_KEY'))
+
+        self.src = src
+        self.branch = branch
 
     @property
     def origin_url(self):
@@ -97,10 +100,14 @@ class CiCLI(object):
 
     @property
     def username(self):
+        if self.src:
+            return self.src.split('/')[0]
         return self.origin_url.split(':')[-1].split('.git')[0].split('/')[-2]
 
     @property
     def project(self):
+        if self.src:
+            return self.src.split('/')[1]
         return self.origin_url.split(':')[-1].split('.git')[0].split('/')[-1]
 
     @property
@@ -113,6 +120,8 @@ class CiCLI(object):
 
     @property
     def active_branch(self):
+        if self.branch:
+            return self.branch
         return Popen(
             'git rev-parse --abbrev-ref HEAD'.split(' '),
             stdout=PIPE,
@@ -157,10 +166,12 @@ def cicli():
 
 
 @cicli.command()
+@click.option('--src')
+@click.option('--branch')
 @click.argument('build_id', required=False)
-def build(build_id=None):
+def build(build_id=None, branch=None, src=None):
     """Shows status of the build"""
-    app = CiCLI()
+    app = CiCLI(branch=branch, src=src)
     build = app.build(build_id)
 
     # :retried, :canceled, :infrastructure_fail, :timedout, :not_run, :running, :failed, :queued, :scheduled, :not_running, :no_tests, :fixed, :success
@@ -232,9 +243,11 @@ def build(build_id=None):
 
 
 @cicli.command()
+@click.option('--src')
+@click.option('--branch')
 @click.argument('build_id', required=False)
-def runfailed(build_id=None):
-    app = CiCLI()
+def runfailed(build_id=None, src=None, branch=None):
+    app = CiCLI(src=src, branch=branch)
     build = app.build(build_id)
     click.echo("%s %s" % (
         build['vcs_revision'][0:7],
