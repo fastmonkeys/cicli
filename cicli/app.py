@@ -445,10 +445,27 @@ def prioritize(build_id=None, branch=None):
 
 
 @cicli.command()
-@click.option('--src')
-@click.option('--branch')
-@click.argument('build_id', required=False)
+@click.option(
+    '--src',
+    help="""The username and the project where the builds are fetched from.
+
+    By default settings from your Git's origin are used. You can override this
+    e.g. yourcompany/yourproduct
+    """
+)
+@click.option(
+    '--branch',
+    help="""The branch where the latest build is chosen.
+
+    By default the active Git branch is used.
+    """
+)
+@click.argument('build_id', type=click.IntRange(1, None), required=False)
 def cancel(build_id=None, src=None, branch=None):
+    """Cancels a build
+
+    If build_id is not given, a latest build is chosen from the branch.
+    """
     app = CiCLI(src=src, branch=branch)
     build = app.build(build_id)
     click.echo("%s %s" % (
@@ -464,10 +481,27 @@ def cancel(build_id=None, src=None, branch=None):
 
 
 @cicli.command()
-@click.option('--src')
-@click.option('--branch')
-@click.argument('build_id', required=False)
+@click.option(
+    '--src',
+    help="""The username and the project where the builds are fetched from.
+
+    By default settings from your Git's origin are used. You can override this
+    e.g. yourcompany/yourproduct
+    """
+)
+@click.option(
+    '--branch',
+    help="""The branch where the latest build is chosen.
+
+    By default the active Git branch is used.
+    """
+)
+@click.argument('build_id', type=click.IntRange(1, None), required=False)
 def retry(build_id=None, src=None, branch=None):
+    """Retries a build
+
+    If build_id is not given, a latest build is chosen from the branch.
+    """
     app = CiCLI(src=src, branch=branch)
     build = app.build(build_id)
     click.echo("%s %s" % (
