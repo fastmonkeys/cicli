@@ -194,7 +194,7 @@ def cicli():
     By default the active Git branch is used.
     """
 )
-@click.argument('build_id', required=False)
+@click.argument('build_id', type=click.IntRange(1, None), required=False)
 def build(build_id=None, branch=None, src=None):
     """Show the status of a build
 
@@ -292,7 +292,7 @@ def build(build_id=None, branch=None, src=None):
     By default the active Git branch is used.
     """
 )
-@click.argument('build_id', required=False)
+@click.argument('build_id', type=click.IntRange(1, None), required=False)
 def runfailed(build_id=None, src=None, branch=None):
     """Runs failed tests locally
 
@@ -341,7 +341,7 @@ def runfailed(build_id=None, src=None, branch=None):
     By default the active Git branch is used.
     """
 )
-@click.argument('build_id', required=False)
+@click.argument('build_id', type=click.IntRange(1, None), required=False)
 def prioritize(build_id=None, branch=None):
     """Prioritizes a given build at the expense of others. Use your power for
     good, not evil
