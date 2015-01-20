@@ -1,4 +1,5 @@
-# cicli
-![Alt text](http://www.publicdomainpictures.net/pictures/100000/velka/bike-crossing-sign.jpg)
+# CiCLI
 
-CircleCI command line client. It's pretty good.
+CiCLI is a tool for managing CircleCI builds. Integrates with Git.
+
+![Screenshot](http://i.imgur.com/Ne6UYlS.png)
