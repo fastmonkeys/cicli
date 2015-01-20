@@ -27,7 +27,7 @@ setup(
     url='https://github.com/fastmonkeys/cicli',
     license='BSD',
     author=u'Teemu Kokkonen, Raúl García',
-    author_email='teemu@fastmonkeys.com, pekka@fastmonkeys.com',
+    author_email='teemu@fastmonkeys.com, raul@fastmonkeys.com',
     packages=find_packages('.', exclude=['examples*', 'test*']),
     entry_points={
         'console_scripts': [ 'cicli = cicli.app:main' ],
