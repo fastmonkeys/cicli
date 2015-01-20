@@ -34,6 +34,29 @@ def json_request(request):
 class CircleAPI(object):
     def __init__(self, api_key):
         self.api_key = api_key
+        self.rootURL = 'https://circleci.com/api/v1/project/'
+
+    def post_action(
+        self,
+        username,
+        project,
+        build_id,
+        action=''
+    ):
+        return json_request(requests.post(
+            self.rootURL +
+            '%s/%s/%s/%s?circle-token=%s' %
+            (
+                username,
+                project,
+                build_id,
+                action,
+                self.api_key,
+            ),
+            headers={
+                'Accept': 'application/json'
+            }
+        ))
 
     def builds(self, limit=100, offset=0):
         return json_request(requests.get(
@@ -57,7 +80,7 @@ class CircleAPI(object):
         filter_by_status=''
     ):
         return json_request(requests.get(
-            'https://circleci.com/api/v1/project/'
+            self.rootURL +
             '%s/%s?circle-token=%s&limit=%s&offset=%s&filter=%s' %
             (
                 username,
@@ -85,6 +108,12 @@ class CircleAPI(object):
                 'Accept': 'application/json'
             }
         ))
+
+    def cancel(self, username, project, build_id):
+        return self.post_action(username, project, build_id, 'cancel')
+
+    def retry(self, username, project, build_id):
+        return self.post_action(username, project, build_id, 'retry')
 
     def get_output(self, action):
         return requests.get(action['output_url']).json()[0]['message']
@@ -163,14 +192,29 @@ class CiCLI(object):
 
         return failed_steps
 
+    def get_first_build(self, branch=None):
+        builds = self.api.builds_for_project(self.username, self.project)
+        branch_builds = [x for x in builds if x['branch'] == branch]
+        return branch_builds[0] if len(branch_builds) else None
+
     def build(self, build_id=None, branch=None):
         branch = branch or self.active_branch
         if build_id:
             return self.api.build(self.username, self.project, build_id)
         else:
-            builds = self.api.builds_for_project(self.username, self.project)
-            branch_builds = [x for x in builds if x['branch'] == branch]
-            return branch_builds[0] if len(branch_builds) else None
+            return self.get_first_build(branch=branch)
+
+    def cancel(self, build_id=None, branch=None):
+        branch = branch or self.active_branch
+        if not build_id:
+            build_id = self.get_first_build(branch=branch)['build_num']
+        return self.api.cancel(self.username, self.project, build_id)
+
+    def retry(self, build_id=None, branch=None):
+        branch = branch or self.active_branch
+        if not build_id:
+            build_id = self.get_first_build(branch=branch)['build_num']
+        return self.api.retry(self.username, self.project, build_id)
 
 
 @click.group()
@@ -381,6 +425,41 @@ def prioritize(build_id=None, branch=None):
             queued_build['subject']
         ))
         app.api.retry(queued_build)
+
+
+@cicli.command()
+@click.option('--src')
+@click.option('--branch')
+@click.argument('build_id', required=False)
+def cancel(build_id=None, src=None, branch=None):
+    app = CiCLI(src=src, branch=branch)
+    build = app.build(build_id)
+    click.echo("%s %s" % (
+        build['vcs_revision'][0:7],
+        build['subject']
+    ))
+    if build['lifecycle'] != 'finished':
+        response = app.cancel(build_id)
+        click.echo("Build %s was cancelled." % response['build_num'])
+        return
+    else:
+        click.echo("Build has already finish.")
+
+
+@cicli.command()
+@click.option('--src')
+@click.option('--branch')
+@click.argument('build_id', required=False)
+def retry(build_id=None, src=None, branch=None):
+    app = CiCLI(src=src, branch=branch)
+    build = app.build(build_id)
+    click.echo("%s %s" % (
+        build['vcs_revision'][0:7],
+        build['subject']
+    ))
+
+    response = app.retry(build_id)
+    click.echo("Build %s has been restarted." % response['build_num'])
 
 
 @cicli.command()
