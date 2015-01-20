@@ -174,16 +174,32 @@ class CiCLI(object):
 
 @click.group()
 def cicli():
-    """CircleCI command line tool"""
+    """A tool for managing CircleCI builds. Integrates with Git."""
     pass
 
 
 @cicli.command()
-@click.option('--src')
-@click.option('--branch')
+@click.option(
+    '--src',
+    help="""The username and the project where the builds are fetched from.
+
+    By default settings from your Git's origin are used. You can override this
+    e.g. yourcompany/yourproduct
+    """
+)
+@click.option(
+    '--branch',
+    help="""The branch where the latest build is chosen.
+
+    By default the active Git branch is used.
+    """
+)
 @click.argument('build_id', required=False)
 def build(build_id=None, branch=None, src=None):
-    """Shows status of the build"""
+    """Show the status of a build
+
+    If build_id is not given, a latest build is chosen from the branch.
+    """
     app = CiCLI(branch=branch, src=src)
     build = app.build(build_id)
 
@@ -261,10 +277,28 @@ def build(build_id=None, branch=None, src=None):
 
 
 @cicli.command()
-@click.option('--src')
-@click.option('--branch')
+@click.option(
+    '--src',
+    help="""The username and the project where the builds are fetched from.
+
+    By default settings from your Git's origin are used. You can override this
+    e.g. yourcompany/yourproduct
+    """
+)
+@click.option(
+    '--branch',
+    help="""The branch where the latest build is chosen.
+
+    By default the active Git branch is used.
+    """
+)
 @click.argument('build_id', required=False)
 def runfailed(build_id=None, src=None, branch=None):
+    """Runs failed tests locally
+
+    If build_id is not given, a latest build is chosen from the branch.
+    """
+
     app = CiCLI(src=src, branch=branch)
     build = app.build(build_id)
     click.echo("%s %s" % (
@@ -298,10 +332,22 @@ def runfailed(build_id=None, src=None, branch=None):
         # else:
         #     click.echo(app.api.get_output(failed_step))
 
+
 @cicli.command()
-@click.option('--branch')
+@click.option(
+    '--branch',
+    help="""The branch where the latest build is chosen
+
+    By default the active Git branch is used.
+    """
+)
 @click.argument('build_id', required=False)
 def prioritize(build_id=None, branch=None):
+    """Prioritizes a given build at the expense of others. Use your power for
+    good, not evil
+
+    If build_id is not given, a latest build is chosen from the branch.
+    """
     app = CiCLI(branch=branch)
     build = app.build(build_id)
     builds = app.api.builds()
