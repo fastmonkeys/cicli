@@ -7,6 +7,7 @@ import click
 import os
 import requests
 import dateutil.parser
+import pytz
 import datetime
 import sys
 
@@ -219,10 +220,10 @@ def build(build_id=None, branch=None, src=None):
     elif build['lifecycle'] == 'running':
         start_time = dateutil.parser.parse(build['start_time'])
         click.echo(
-            "Your build has been running for %s minutes" % round((
-                datetime.datetime.utcnow() -
+            "Your build has been running for %d minutes" % round((
+                datetime.datetime.utcnow().replace(tzinfo=pytz.utc) -
                 start_time
-            ).total_seconds() / 60.0)
+            ).total_seconds() / 60)
         )
     elif build['lifecycle'] == 'finished':
         # // :canceled, :infrastructure_fail, :timedout, :failed, :no_tests or :success
