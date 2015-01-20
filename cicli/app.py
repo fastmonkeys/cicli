@@ -11,7 +11,7 @@ import pytz
 import datetime
 import sys
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 EMOJI_SUCCESS = u'✅'
 EMOJI_FAIL = u'❌'
 EMOJI_QUEUE = u'⏳'
