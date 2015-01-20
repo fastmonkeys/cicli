@@ -1,4 +1,4 @@
 # cicli
-CircleCI command line client
+![Alt text](http://www.publicdomainpictures.net/pictures/100000/velka/bike-crossing-sign.jpg)
 
-It's pretty good.
+CircleCI command line client. It's pretty good.
