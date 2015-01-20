@@ -34,6 +34,19 @@ class CircleAPI(object):
     def __init__(self, api_key):
         self.api_key = api_key
 
+    def builds(self, limit=100, offset=0):
+        return json_request(requests.get(
+            'https://circleci.com/api/v1/recent-builds?circle-token=%s'
+            '&limit=%s&offset=%s' % (
+                self.api_key,
+                limit,
+                offset
+            ),
+            headers={
+                'Accept': 'application/json'
+            }
+        ))
+
     def builds_for_project(
         self,
         username,
@@ -284,6 +297,43 @@ def runfailed(build_id=None, src=None, branch=None):
         #         )
         # else:
         #     click.echo(app.api.get_output(failed_step))
+
+@cicli.command()
+@click.option('--branch')
+@click.argument('build_id', required=False)
+def prioritize(build_id=None, branch=None):
+    app = CiCLI(branch=branch)
+    build = app.build(build_id)
+    builds = app.api.builds()
+    queued_builds = [x for x in builds if x['status'] == 'queued']
+
+    if not build:
+        click.echo("Can't find a build.")
+        sys.exit(1)
+
+    if build['status'] != 'queued':
+        click.echo("Your build is not queued.")
+        sys.exit(1)
+
+    if len(queued_builds) <= 0:
+        click.echo("There are no builds that are queued.")
+        sys.exit(1)
+
+    click.echo("The following builds will be cancelled and rerun")
+    for queued_build in queued_builds:
+        click.echo("  %s %s" % (
+            queued_build['vcs_revision'][0:7],
+            queued_build['subject']
+        ))
+        app.api.cancel(queued_build)
+
+    click.echo("Retrying builds that were cancelled...")
+    for queued_build in queued_builds:
+        click.echo("  %s %s" % (
+            queued_build['vcs_revision'][0:7],
+            queued_build['subject']
+        ))
+        app.api.retry(queued_build)
 
 
 @cicli.command()
