@@ -23,6 +23,9 @@ ERROR_ANALYZERS = (
 class CircleAPIError(Exception):
     pass
 
+class CiCLIError(Exception):
+    pass
+
 
 def json_request(request):
     if request.status_code == 200:
@@ -135,11 +138,18 @@ class CiCLI(object):
 
     @property
     def origin_url(self):
-        return Popen(
+        remote_origin = Popen(
             'git config --get remote.origin.url'.split(' '),
             stdout=PIPE,
             stderr=PIPE
         ).communicate()[0].strip()
+        if remote_origin:
+            return remote_origin
+        else:
+            raise CiCLIError("""You are not in a Git repository.
+
+You can specify project using --src yourcompany/yourproduct
+""")
 
     @property
     def username(self):
@@ -165,11 +175,18 @@ class CiCLI(object):
     def active_branch(self):
         if self.branch:
             return self.branch
-        return Popen(
+        branch = Popen(
             'git rev-parse --abbrev-ref HEAD'.split(' '),
             stdout=PIPE,
             stderr=PIPE
         ).communicate()[0].strip()
+        if branch:
+            return branch
+        else:
+            raise CiCLIError("""You are not in a Git repository.
+
+You can specify the branch using --branch yourcompany/yourproduct
+""")
 
     def failed_tests(self, build):
         if 'steps' not in build:
