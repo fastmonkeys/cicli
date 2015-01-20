@@ -1,4 +1,3 @@
-# cicli
-![Alt text](http://www.publicdomainpictures.net/pictures/100000/velka/bike-crossing-sign.jpg)
+# CiCLI
 
-CircleCI command line client. It's pretty good.
+![CiCLI screenshot](http://i.imgur.com/NscndRe.png)
