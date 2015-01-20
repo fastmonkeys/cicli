@@ -8,6 +8,7 @@ import os
 import requests
 import dateutil.parser
 import datetime
+import sys
 
 __version__ = '0.1.0'
 EMOJI_SUCCESS = u'✅'
@@ -66,10 +67,30 @@ class CircleAPI(object):
 
 class CiCLI(object):
     def __init__(self):
+        if not os.environ.get('CIRCLECI_API_KEY'):
+            click.echo("You haven't set your CIRCLECI_API_KEY.")
+            click.echo("Add API key at https://circleci.com/account/api")
+            click.echo("After getting your API key, add this line to your .bashrc or .zhsrc:")
+            click.echo("export CIRCLECI_API_KEY=YOUR_API_KEY_HERE")
+            click.echo("")
+            sys.exit(1)
         self.api = CircleAPI(os.environ.get('CIRCLECI_API_KEY'))
-        self.username = 'fastmonkeys'
-        self.project = 'pelsu'
-        pass
+
+    @property
+    def origin_url(self):
+        return Popen(
+            'git config --get remote.origin.url'.split(' '),
+            stdout=PIPE,
+            stderr=PIPE
+        ).communicate()[0].strip()
+
+    @property
+    def username(self):
+        return self.origin_url.split(':')[-1].split('.git')[0].split('/')[-2]
+
+    @property
+    def project(self):
+        return self.origin_url.split(':')[-1].split('.git')[0].split('/')[-1]
 
     @property
     def commit(self):
