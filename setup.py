@@ -26,7 +26,7 @@ setup(
     version=VERSION,
     url='https://github.com/fastmonkeys/cicli',
     license='BSD',
-    author=u'Teemu Kokkonen, Pekka Pöyry',
+    author=u'Teemu Kokkonen, Raúl García',
     author_email='teemu@fastmonkeys.com, pekka@fastmonkeys.com',
     packages=find_packages('.', exclude=['examples*', 'test*']),
     entry_points={
