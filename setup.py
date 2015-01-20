@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 # https://bitbucket.org/zzzeek/alembic/raw/f38eaad4a80d7e3d893c3044162971971ae0
 # 09bf/setup.py
 with open(
-    os.path.join(os.path.dirname(__file__), 'stellar', 'app.py')
+    os.path.join(os.path.dirname(__file__), 'cicli', 'app.py')
 ) as app_file:
     VERSION = re.compile(
         r".*__version__ = '(.*?)'", re.S
@@ -48,13 +48,7 @@ setup(
         'Topic :: Software Development :: Version Control',
     ],
     install_requires = [
-        'PyYAML==3.11',
-        'SQLAlchemy==0.9.6',
-        'humanize==0.5.1',
-        'pytest==2.5.2',
-        'schema==0.3.1',
         'click==3.1',
-        'SQLAlchemy-Utils==0.26.11',
-        'psutil==2.1.1',
+        'dateutils==0.6.6'
     ]
 )
