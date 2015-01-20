@@ -156,7 +156,7 @@ class CiCLI(object):
         else:
             builds = self.api.builds_for_project(self.username, self.project)
             branch_builds = [x for x in builds if x['branch'] == branch]
-            return branch_builds[0]
+            return branch_builds[0] if len(branch_builds) else None
 
 
 @click.group()
@@ -173,6 +173,11 @@ def build(build_id=None, branch=None, src=None):
     """Shows status of the build"""
     app = CiCLI(branch=branch, src=src)
     build = app.build(build_id)
+
+    if not build:
+        click.echo('Build not found in server.')
+        # TODO: Call status command.
+        sys.exit(1)
 
     # :retried, :canceled, :infrastructure_fail, :timedout, :not_run, :running, :failed, :queued, :scheduled, :not_running, :no_tests, :fixed, :success
     click.echo("%s %s" % (
