@@ -11,7 +11,7 @@ import pytz
 import datetime
 import sys
 
-__version__ = '0.1.2'
+__version__ = '0.1.4'
 EMOJI_SUCCESS = u'✅'
 EMOJI_FAIL = u'❌'
 EMOJI_QUEUE = u'⏳'
@@ -397,6 +397,14 @@ def runfailed(build_id=None, src=None, branch=None):
 
 @cicli.command()
 @click.option(
+    '--src',
+    help="""The username and the project where the builds are fetched from.
+
+    By default settings from your Git's origin are used. You can override this
+    e.g. yourcompany/yourproduct
+    """
+)
+@click.option(
     '--branch',
     help="""The branch where the latest build is chosen
 
@@ -404,22 +412,26 @@ def runfailed(build_id=None, src=None, branch=None):
     """
 )
 @click.argument('build_id', type=click.IntRange(1, None), required=False)
-def prioritize(build_id=None, branch=None):
+def prioritize(build_id=None, src=None, branch=None):
     """Prioritizes a given build at the expense of others. Use your power for
     good, not evil
 
     If build_id is not given, a latest build is chosen from the branch.
     """
-    app = CiCLI(branch=branch)
+    app = CiCLI(src=src, branch=branch)
     build = app.build(build_id)
     builds = app.api.builds()
-    queued_builds = [x for x in builds if x['status'] == 'queued']
+    queued_builds = [
+        x for x in builds
+        if x['status'] in ('queued', 'scheduled') and
+        x['build_num'] != build['build_num']
+    ]
 
     if not build:
         click.echo("Can't find a build.")
         sys.exit(1)
 
-    if build['status'] != 'queued':
+    if build['status'] not in ('queued', 'scheduled'):
         click.echo("Your build is not queued.")
         sys.exit(1)
 
@@ -433,7 +445,7 @@ def prioritize(build_id=None, branch=None):
             queued_build['vcs_revision'][0:7],
             queued_build['subject']
         ))
-        app.api.cancel(queued_build['build_num'])
+        app.cancel(queued_build['build_num'])
 
     click.echo("Retrying builds that were cancelled...")
     for queued_build in queued_builds:
@@ -441,7 +453,7 @@ def prioritize(build_id=None, branch=None):
             queued_build['vcs_revision'][0:7],
             queued_build['subject']
         ))
-        app.api.retry(queued_build['build_num'])
+        app.retry(queued_build['build_num'])
 
 
 @cicli.command()
