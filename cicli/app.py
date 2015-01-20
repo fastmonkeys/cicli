@@ -85,7 +85,7 @@ class CiCLI(object):
             click.echo("export CIRCLECI_API_KEY=YOUR_API_KEY_HERE")
             click.echo("")
             sys.exit(1)
-        self.api = CircleAPI('d'+os.environ.get('CIRCLECI_API_KEY'))
+        self.api = CircleAPI(os.environ.get('CIRCLECI_API_KEY'))
 
     @property
     def origin_url(self):
