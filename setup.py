@@ -50,6 +50,6 @@ setup(
     install_requires = [
         'click==3.1',
         'dateutils==0.6.6',
-        'requests==2.5.1'
+        'requests==2.20.0'
     ]
 )
